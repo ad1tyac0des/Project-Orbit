@@ -1,0 +1,21 @@
+{
+    "profiles": {
+        "gemini-flash-lite": {
+            "type": "gemini",
+            "model": "gemini-3.5-flash-lite",
+            "apiKeyName": "GEMINI_API_KEY"
+        },
+        "openrouter-qwen-free": {
+            "type": "openai",
+            "model": "qwen/qwen3-next-80b-a3b-instruct:free",
+            "baseURL": "https://openrouter.ai/api/v1",
+            "apiKeyName": "OPENROUTER_API_KEY"
+        },
+        "ollama-qwen3.5": {
+            "type": "openai",
+            "model": "qwen3.5:9b",
+            "baseURL": "http://localhost:11434/v1",
+            "requiresApiKey": false
+        }
+    }
+}
