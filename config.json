@@ -10,9 +10,9 @@
             "model": "gemini-3.1-flash-lite",
             "apiKeyName": "GEMINI_API_KEY"
         },
-        "openrouter-qwen-free": {
+        "openrouter-nemotron-free": {
             "type": "openai",
-            "model": "qwen/qwen3-next-80b-a3b-instruct:free",
+            "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
             "baseURL": "https://openrouter.ai/api/v1",
             "apiKeyName": "OPENROUTER_API_KEY"
         },
