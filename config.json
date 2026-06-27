@@ -1,8 +1,13 @@
 {
     "profiles": {
-        "gemini-flash-lite": {
+        "gemini-2.5-flash-lite": {
             "type": "gemini",
-            "model": "gemini-3.5-flash-lite",
+            "model": "gemini-2.5-flash-lite",
+            "apiKeyName": "GEMINI_API_KEY"
+        },
+        "gemini-3.1-flash-lite": {
+            "type": "gemini",
+            "model": "gemini-3.1-flash-lite",
             "apiKeyName": "GEMINI_API_KEY"
         },
         "openrouter-qwen-free": {
