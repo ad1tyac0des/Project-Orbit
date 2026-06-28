@@ -7,30 +7,50 @@
 // 6. print the reply
 // 7. repeat
 import type { LLMProvider, Message } from "../providers/types";
+import { getInput } from "./input";
 
 export async function runLoop(llm: LLMProvider) {
     const history: Message[] = [];
 
     while (true) {
-        const userInput = prompt(">>");
-        if (userInput === null || !userInput.trim()) continue;
-        const tempHistory: Message[] = [
-            ...history,
-            { role: "user", content: userInput },
-        ];
-        console.log("AI is thinking...")
-        const reply = await llm.chat(tempHistory);
-        history.push(
-            {
-                role: "user",
-                content: userInput,
-            },
-            {
-                role: "assistant",
-                content: reply,
-            },
-        );
+        const signal = getInput();
 
-        console.log(`AI: ${reply}`);
+        if (signal.kind === "empty") continue;
+        if (signal.kind === "exit") exit();
+        if (signal.kind === "help") {
+            showHelp();
+            continue;
+        }
+
+        if (signal.kind === "input") {
+            const userInput = signal.value;
+            const tempHistory: Message[] = [
+                ...history,
+                { role: "user", content: userInput },
+            ];
+            console.log("AI is thinking...");
+            const reply = await llm.chat(tempHistory);
+            history.push(
+                {
+                    role: "user",
+                    content: userInput,
+                },
+                {
+                    role: "assistant",
+                    content: reply,
+                },
+            );
+
+            console.log(`AI: ${reply}`);
+        }
     }
+}
+
+function exit() {
+    console.log("Goodbye👋🏼");
+    process.exit(0);
+}
+
+function showHelp() {
+    console.log("Available Commands:\n/exit - Exit the program\n/help - Show this help");
 }
