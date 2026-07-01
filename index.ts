@@ -1,5 +1,9 @@
 import { createProvider } from "./src/providers/index";
 import { runLoop } from "./src/agent/loop";
+import { connectDB, initSchema } from "./src/memory/db";
 
 const llm = createProvider("openrouter-nemotron-free");
-await runLoop(llm);
+const db = connectDB();
+initSchema(db);
+
+await runLoop(llm, db);

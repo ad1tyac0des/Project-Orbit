@@ -1,16 +1,10 @@
-// 0. lets create fn instead class cuz i didnt need to manage state on any object, only history which can be created as a simple array of messages(for now)
-// 1. store the history of messages
-// 2. create a loop that runs until the user exits(while true)
-// 3. prompt the user for input
-// 4. send the input + history to the llm and get the response
-// 5. now save the input and reply to the history
-// 6. print the reply
-// 7. repeat
 import type { LLMProvider, Message } from "../providers/types";
 import { getInput } from "./input";
+import type { Database } from "bun:sqlite";
+import { loadHistory, saveMessage } from "../memory/db";
 
-export async function runLoop(llm: LLMProvider) {
-    const history: Message[] = [];
+export async function runLoop(llm: LLMProvider, db: Database) {
+    const history: Message[] = loadHistory(db);
 
     while (true) {
         const signal = getInput();
@@ -24,24 +18,16 @@ export async function runLoop(llm: LLMProvider) {
 
         if (signal.kind === "input") {
             const userInput = signal.value;
-            const tempHistory: Message[] = [
-                ...history,
-                { role: "user", content: userInput },
-            ];
-            console.log("AI is thinking...");
-            const reply = await llm.chat(tempHistory);
-            history.push(
-                {
-                    role: "user",
-                    content: userInput,
-                },
-                {
-                    role: "assistant",
-                    content: reply,
-                },
-            );
 
+            history.push({role: "user", content: userInput});
+            console.log("AI is thinking...");
+            const reply = await llm.chat(history);
             console.log(`AI: ${reply}`);
+            history.push({ role: "assistant", content: reply });
+
+            // persist to db
+            saveMessage(db, { role: "user", content: userInput });
+            saveMessage(db, { role: "assistant", content: reply });
         }
     }
 }
