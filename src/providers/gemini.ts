@@ -2,22 +2,24 @@ import type { LLMProvider, Message } from "./types";
 import { GoogleGenAI } from "@google/genai";
 
 export class GeminiProvider implements LLMProvider {
+    private ai: GoogleGenAI;
+
     constructor(
         private readonly apiKey: string,
         private readonly model: string,
-    ) { }
-
-    async chat(messages: Message[]): Promise<string> {
-        const ai = new GoogleGenAI({
+    ) {
+        this.ai = new GoogleGenAI({
             apiKey: this.apiKey,
         });
+    }
 
-        const formattedMessages = messages.map(message => ({
-            type: (message.role === "user" ? "user_input" : "model_output"),
-            content: [{type: "text" as const, text: message.content}]
+    async chat(messages: Message[]): Promise<string> {
+        const formattedMessages = messages.map((message) => ({
+            type: message.role === "user" ? "user_input" : "model_output",
+            content: [{ type: "text" as const, text: message.content }],
         }));
 
-        const interaction = await ai.interactions.create({
+        const interaction = await this.ai.interactions.create({
             model: this.model,
             store: false,
             input: formattedMessages,
