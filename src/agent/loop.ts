@@ -19,15 +19,25 @@ export async function runLoop(llm: LLMProvider, db: Database) {
         if (signal.kind === "input") {
             const userInput = signal.value;
 
-            history.push({role: "user", content: userInput});
-            console.log("AI is thinking...");
-            const reply = await llm.chat(history);
-            console.log(`AI: ${reply}`);
-            history.push({ role: "assistant", content: reply });
+            try {
+                const tempHistory: Message[] = [
+                    ...history,
+                    { role: "user", content: userInput },
+                ];
+                console.log("AI is thinking...");
+                const reply = await llm.chat(tempHistory);
+                console.log(`AI: ${reply}`);
+                history.push(
+                    { role: "user", content: userInput },
+                    { role: "assistant", content: reply },
+                );
 
-            // persist to db
-            saveMessage(db, { role: "user", content: userInput });
-            saveMessage(db, { role: "assistant", content: reply });
+                // persist to db
+                saveMessage(db, { role: "user", content: userInput });
+                saveMessage(db, { role: "assistant", content: reply });
+            } catch (err) {
+                console.log("Something went wrong: ", (err as Error).message);
+            }
         }
     }
 }
@@ -38,5 +48,7 @@ function exit() {
 }
 
 function showHelp() {
-    console.log("Available Commands:\n/exit - Exit the program\n/help - Show this help");
+    console.log(
+        "Available Commands:\n/exit - Exit the program\n/help - Show this help",
+    );
 }

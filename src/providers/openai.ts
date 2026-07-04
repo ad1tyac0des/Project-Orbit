@@ -2,7 +2,7 @@ import type { LLMProvider, Message } from "./types";
 import OpenAI from "openai";
 
 export class OpenAIProvider implements LLMProvider {
-    private client: OpenAI; 
+    private client: OpenAI;
 
     constructor(
         private baseURL: string,
@@ -16,15 +16,19 @@ export class OpenAIProvider implements LLMProvider {
     }
 
     async chat(messages: Message[]): Promise<string> {
-        const completion = await this.client.chat.completions.create({
-            model: this.model,
-            messages: messages,
-        });
+        try {
+            const completion = await this.client.chat.completions.create({
+                model: this.model,
+                messages: messages,
+            });
 
-        const choice = completion.choices[0];
-        if (!choice) throw new Error("Provider returned no choices");
-        const text = choice.message?.content;
-        if (!text) throw new Error("Provider returned no text output");
-        return text;
+            const choice = completion.choices[0];
+            if (!choice) throw new Error("Provider returned no choices");
+            const text = choice.message?.content;
+            if (!text) throw new Error("Provider returned no text output");
+            return text;
+        } catch (err) {
+            throw new Error(`OpenAI request failed: ${(err as Error).message}`);
+        }
     }
 }
