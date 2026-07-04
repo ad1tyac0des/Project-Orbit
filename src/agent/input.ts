@@ -3,6 +3,7 @@ export type InputSignal =
     | { kind: "empty" }
     | { kind: "exit" }
     | { kind: "help" }
+    | { kind: "profiles" }
     | { kind: "switchModel"; profile: string };
 
 export function getInput(): InputSignal {
@@ -18,6 +19,7 @@ export function getInput(): InputSignal {
     // Slash Commands
     if (trimmed === "/exit") return { kind: "exit" };
     if (trimmed === "/help") return { kind: "help" };
+    if (trimmed === "/profiles") return { kind: "profiles" };
     if (trimmed.startsWith("/model ")) {
         const profile = trimmed.slice(7).trim();
         if (!profile) return { kind: "empty" }; // no profile given

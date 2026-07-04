@@ -2,7 +2,7 @@ import type { LLMProvider, Message } from "../providers/types";
 import { getInput } from "./input";
 import type { Database } from "bun:sqlite";
 import { loadHistory, saveMessage } from "../memory/db";
-import { createProvider } from "../providers/index";
+import { createProvider, getProfiles } from "../providers/index";
 
 export async function runLoop(llm: LLMProvider, db: Database) {
     let currentLLM = llm;
@@ -17,11 +17,15 @@ export async function runLoop(llm: LLMProvider, db: Database) {
             showHelp();
             continue;
         }
+        if (signal.kind === "profiles") {
+            listProfiles();
+            continue;
+        }
         if (signal.kind === "switchModel") {
             try {
                 currentLLM = createProvider(signal.profile);
                 console.log(`✅ Switched to: ${signal.profile}`);
-            } catch(err) {
+            } catch (err) {
                 console.log(`❌ Error Switching Model: ${(err as Error).message}`);
             }
             continue;
@@ -60,6 +64,14 @@ function exit() {
 
 function showHelp() {
     console.log(
-        "Available Commands:\n/exit - Exit the program\n/help - Show this help\n/model <profile> - Switch to a different LLM profile",
+        "Available Commands:\n/help - Show this help\n/exit - Exit the program\n/profiles - List all available LLMs\n/model <profile> - Switch to a different LLM profile",
     );
+}
+
+function listProfiles() {
+    const profiles = getProfiles();
+    console.log("Available Models:");
+    for (const [idx, profile] of profiles.entries()) {
+        console.log(`  ${idx + 1}. ${profile}`);
+    }
 }

@@ -1,4 +1,5 @@
-// factory fn: reads config.json and .env and instantiates the providers
+// Providers Module
+
 import type { LLMProvider, ProviderProfile } from "./types";
 import { GeminiProvider } from "./gemini";
 import { OpenAIProvider } from "./openai";
@@ -38,4 +39,8 @@ export function createProvider(name: string): LLMProvider {
             return new OpenAIProvider(profile.baseURL ?? "", apiKey, profile.model);
         }
     }
+}
+
+export function getProfiles(): string[] {
+    return Object.keys(config.profiles);
 }
