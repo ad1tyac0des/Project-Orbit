@@ -2,8 +2,10 @@ import type { LLMProvider, Message } from "../providers/types";
 import { getInput } from "./input";
 import type { Database } from "bun:sqlite";
 import { loadHistory, saveMessage } from "../memory/db";
+import { createProvider } from "../providers/index";
 
 export async function runLoop(llm: LLMProvider, db: Database) {
+    let currentLLM = llm;
     const history: Message[] = loadHistory(db);
 
     while (true) {
@@ -13,6 +15,15 @@ export async function runLoop(llm: LLMProvider, db: Database) {
         if (signal.kind === "exit") exit();
         if (signal.kind === "help") {
             showHelp();
+            continue;
+        }
+        if (signal.kind === "switchModel") {
+            try {
+                currentLLM = createProvider(signal.profile);
+                console.log(`✅ Switched to: ${signal.profile}`);
+            } catch(err) {
+                console.log(`❌ Error Switching Model: ${(err as Error).message}`);
+            }
             continue;
         }
 
@@ -25,7 +36,7 @@ export async function runLoop(llm: LLMProvider, db: Database) {
                     { role: "user", content: userInput },
                 ];
                 console.log("AI is thinking...");
-                const reply = await llm.chat(tempHistory);
+                const reply = await currentLLM.chat(tempHistory);
                 console.log(`AI: ${reply}`);
                 history.push(
                     { role: "user", content: userInput },
@@ -49,6 +60,6 @@ function exit() {
 
 function showHelp() {
     console.log(
-        "Available Commands:\n/exit - Exit the program\n/help - Show this help",
+        "Available Commands:\n/exit - Exit the program\n/help - Show this help\n/model <profile> - Switch to a different LLM profile",
     );
 }

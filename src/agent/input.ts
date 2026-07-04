@@ -1,27 +1,28 @@
-// 0. lets create a fn
-// 1. Takes the input and returns it
-// 2. Handle all edge cases
-// 3. add some commands -> /exit, /help
-
 export type InputSignal =
     | { kind: "input"; value: string }
     | { kind: "empty" }
     | { kind: "exit" }
-    | { kind: "help" };
+    | { kind: "help" }
+    | { kind: "switchModel"; profile: string };
 
 export function getInput(): InputSignal {
     const raw = prompt(">>");
 
     // Edge Case
-    if (raw === null) return { kind: "empty" };
+    if (raw === null) return { kind: "empty" }; // user pressed ctrl + c for cancel
 
     const trimmed = raw.trim();
     // Edge Case
-    if (!trimmed) return { kind: "empty" };
+    if (!trimmed) return { kind: "empty" }; // user pressed enter without typing anything(only spaces)
 
     // Slash Commands
     if (trimmed === "/exit") return { kind: "exit" };
     if (trimmed === "/help") return { kind: "help" };
+    if (trimmed.startsWith("/model ")) {
+        const profile = trimmed.slice(7).trim();
+        if (!profile) return { kind: "empty" }; // no profile given
+        return { kind: "switchModel", profile };
+    }
 
     return { kind: "input", value: trimmed };
 }
