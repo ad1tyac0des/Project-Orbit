@@ -12,6 +12,7 @@ import {
     isCancel,
     cancel,
 } from "@clack/prompts";
+import pico from "picocolors";
 
 export async function runLoop(llm: LLMProvider, db: Database) {
     let currentLLM = llm;
@@ -51,7 +52,7 @@ export async function runLoop(llm: LLMProvider, db: Database) {
                     continue;
                 }
                 currentLLM = createProvider(profile);
-                log.success(`Switched to ${profile}`);
+                log.info(pico.gray(pico.italic(`Switched to ${pico.underline(profile)}`)));
             } catch (err) {
                 log.error(`Error Selecting Model: ${(err as Error).message}`);
             }
@@ -60,7 +61,7 @@ export async function runLoop(llm: LLMProvider, db: Database) {
         if (signal.kind === "switchModel") {
             try {
                 currentLLM = createProvider(signal.profile);
-                log.success(`Switched to ${signal.profile}`);
+                log.info(`Switched to ${signal.profile}`);
             } catch (err) {
                 log.error(`Error Switching Model: ${(err as Error).message}`);
             }
@@ -78,7 +79,8 @@ export async function runLoop(llm: LLMProvider, db: Database) {
                 ];
                 s.start("Orbit is thinking");
                 const reply = await currentLLM.chat(tempHistory);
-                s.stop(reply);
+                s.clear();
+                log.success(reply);
                 history.push(
                     { role: "user", content: userInput },
                     { role: "assistant", content: reply },
