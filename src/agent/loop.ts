@@ -52,7 +52,9 @@ export async function runLoop(llm: LLMProvider, db: Database) {
                     continue;
                 }
                 currentLLM = createProvider(profile);
-                log.info(pico.gray(pico.italic(`Switched to ${pico.underline(profile)}`)));
+                log.info(
+                    pico.gray(pico.italic(`Switched to ${pico.underline(profile)}`)),
+                );
             } catch (err) {
                 log.error(`Error Selecting Model: ${(err as Error).message}`);
             }
@@ -71,6 +73,7 @@ export async function runLoop(llm: LLMProvider, db: Database) {
         if (signal.kind === "input") {
             const userInput = signal.value;
             const s = spinner();
+            let reply: string;
 
             try {
                 const tempHistory: Message[] = [
@@ -78,20 +81,25 @@ export async function runLoop(llm: LLMProvider, db: Database) {
                     { role: "user", content: userInput },
                 ];
                 s.start("Orbit is thinking");
-                const reply = await currentLLM.chat(tempHistory);
+                reply = await currentLLM.chat(tempHistory);
                 s.clear();
                 log.success(reply);
                 history.push(
                     { role: "user", content: userInput },
                     { role: "assistant", content: reply },
                 );
-
-                // persist to db
-                saveMessage(db, { role: "user", content: userInput });
-                saveMessage(db, { role: "assistant", content: reply });
             } catch (err) {
                 s.error(`Something went wrong: ${(err as Error).message}`);
                 log.info("If error persists, try switching to different model.");
+                continue;
+            }
+
+            // persist to db
+            try {
+                saveMessage(db, { role: "user", content: userInput });
+                saveMessage(db, { role: "assistant", content: reply });
+            } catch (err) {
+                log.error(`Failed to save message: ${(err as Error).message}`);
             }
         }
     }
